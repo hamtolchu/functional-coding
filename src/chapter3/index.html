@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <title>functional coding - Chapter 3</title>
+  </head>
+  <body>
+    <pre>
+      Chapter 3 - base code
+    </pre>
+    <script>
+      function fetchCouponFromDB() {
+        return [
+          { code: 'MAYDISCOUNT', rank: 'good' },
+          { code: '10PERCENT', rank: 'bad' },
+          { code: 'PROMOTION45', rank: 'best' },
+          { code: 'IHEARTYOU', rank: 'bad' },
+          { code: 'GETADEAL', rank: 'best' },
+          { code: 'ILIKEDISCOUNTS', rank: 'good' }
+        ];
+      }
+
+      function fetchSubscribersFromDB() {
+        return [
+          { email: 'john@coldmail.com', rec_count: 2 },
+          { email: 'sam@pmail.com', rec_count: 16 },
+          { email: 'linda1989@oal.com', rec_count: 1 },
+          { email: 'jan1940@ahoy.com', rec_count: 0 },
+          { email: 'mrbig@pmail.com', rec_count: 25 },
+          { email: 'lol@lol.lol', rec_count: 0 }
+        ];
+      }
+
+      const emailSystem = {
+        send(email) {
+          const { to } = email;
+          console.log(`send email to ${to}`);
+        }
+      };
+
+      // [C] : 쿠폰 등급을 결정하는 함수
+      function subCouponRank(subscriber) {
+        if (subscriber.rec_count >= 10) {
+          return "best";
+        }
+        return "good";
+      }
+
+      // [C] : 특정 등급의 쿠폰 목록을 선택하는 함수
+      function selectCouponsByRank(coupons, rank) {
+        let res = [];
+        for (const coupon of coupons) {
+          const { code, rank: couponRank } = coupon;
+          if (rank === couponRank) {
+            res.push(code);
+          }
+        }
+        return res;
+      }
+
+      // [C] : 구독자가 받을 이메일을 계획하는 계산
+      function emailForSubscriber(subscriber, goods, bests) {
+        const rank = subCouponRank(subscriber);
+        if (rank === "best") {
+          return {
+            from: "newsletter@coupondog.co",
+            to: subscriber.email,
+            subject: "Your best weekly coupons inside",
+            body: `Here are the best coupons: ${bests.join(", ")}`,
+          };
+        } else {
+          return {
+            from: "newsletter@coupondog.co",
+            to: subscriber.email,
+            subject: "Your best weekly coupons inside",
+            body: `Here are the good coupons: ${goods.join(", ")}`,
+          };
+        }
+      }
+
+      // [C]: 보낼 이메일 목록 준비하기
+      function emailForSubscribers(subscribers, goods, bests) {
+        const emails = [];
+        for (const subscriber of subscribers) {
+          const email = emailForSubscriber(subscriber, goods, bests);
+          emails.push(email);
+        }
+        return emails;
+      }
+
+      // [A]: 이메일 보내기
+      function sendIssue() {
+        const coupons = fetchCouponFromDB();
+        const goodCoupons = selectCouponsByRank(coupons, "good");
+        const bestCoupons = selectCouponsByRank(coupons, "best");
+        const subscribers = fetchSubscribersFromDB();
+        const emails = emailForSubscribers(subscribers, goodCoupons, bestCoupons);
+        for (const email of emails) {
+          emailSystem.send(email);
+        }
+      }
+
+      sendIssue();
+    </script>
+  </body>
+</html>
