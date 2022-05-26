@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <title>MegaMart</title>
+  <meta charset="utf-8">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      background-color: black;
+    }
+    body {
+      padding: 16px;
+      width: 640px;
+      height: 100vh;
+      margin: 0 auto;
+      background-color: white;
+    }
+    header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid gray;
+    }
+    #product-list {
+      margin: 0;
+      padding: 0 0 0 16px;
+    }
+    #product-list > li {
+      padding: 8px 0 ;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      border-bottom: 1px solid gray;
+    }
+    #product-list > li > .product-name {
+      margin-right: 8px;
+    }
+    #product-list > li > .product-price {
+      margin-right: 8px;
+    }
+    #product-list > li > .btn-add-to-cart {
+      cursor: pointer;
+      background-color: blue;
+      color: yellow;
+      border: none;
+      padding: 8px 16px;
+      margin: 0;
+      border-radius: 5px;
+      opacity: 0.8;
+      transition: opacity 300ms ease-out;
+    }
+    #product-list > li > .btn-add-to-cart:hover {
+      opacity: 1;
+    }
+    #product-list > li:last-child{
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MegaMart</h1>
+    <span id="cart-total-price">$</span>
+  </header>
+  <section>
+    <ul id="product-list"></ul>
+  </section>
+  <script>
+    // core
+    const $ = {};
+    $.el = html => {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = html;
+      return wrap.children[0];
+    };
+    $.append = (child, parent = document) => parent.appendChild(child);
+    $.qs = (sel, parent = document) => parent.querySelector(sel);
+    $.qsa = (sel, parent = document) => parent.querySelectorAll(sel);
+    $.on = (el, event, f) => el.addEventListener(event, f);
+  </script>
+
+  <script>
+    // example application business logic + data
+    var products = [
+      { id: 1, name: 'shoes', price: 6 },
+      { id: 2, name: 't-shirt', price: 2 },
+    ];
+    var shopping_cart = [];
+    var shopping_cart_total = 0;
+
+    function add_item_to_cart(name, price) {
+      shopping_cart.push({
+        name: name,
+        price: price
+      });
+      calc_cart_total();
+    }
+
+    function calc_cart_total() {
+      shopping_cart_total = 0;
+      for(var i = 0; i < shopping_cart.length; i++) {
+        var item = shopping_cart[i];
+        shopping_cart_total += item.price;
+      }
+      set_cart_total_dom();
+    }
+
+    function set_cart_total_dom() {
+      $.qs('#cart-total-price').textContent = `$${shopping_cart_total}`;
+    }
+
+  </script>
+  <script>
+    // initialize
+    const listWrap = $.qs('#product-list');
+    products
+      .map(({ id, name, price }) => {
+        return $.el(`
+          <li data-product-id="${id}">
+            <span class="product-name">${name}</span>
+            <span class="product-price">$${price}</span>
+            <button type="button" class="btn-add-to-cart">구매하기</button>
+          </li>
+        `);
+      })
+      .forEach((el) => {
+        $.on(el, 'click', function (event) {
+          const productId = parseInt(event.currentTarget.getAttribute('data-product-id'), 10);
+          const [product] = products.filter((p) => p.id === productId);
+          if (!product) {
+            return;
+          }
+          add_item_to_cart(product.name, product.price);
+        });
+        $.append(el, listWrap);
+      });
+    $.qs('#cart-total-price').textContent = `$${shopping_cart_total}`;
+  </script>
+</body>
+</html>
