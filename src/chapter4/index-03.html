@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <title>MegaMart - free delivery</title>
+  <meta charset="utf-8">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      background-color: black;
+    }
+    body {
+      padding: 16px;
+      width: 640px;
+      height: 100vh;
+      margin: 0 auto;
+      background-color: white;
+    }
+    header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid gray;
+    }
+    #product-list {
+      margin: 0;
+      padding: 0 0 0 16px;
+    }
+    #product-list > li {
+      padding: 8px 0 ;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      border-bottom: 1px solid gray;
+    }
+    #product-list > li > .product-name {
+      margin-right: 8px;
+    }
+    #product-list > li > .product-price {
+      margin-right: 8px;
+    }
+    #product-list > li > .btn-add-to-cart {
+      cursor: pointer;
+      background-color: blue;
+      color: yellow;
+      border: none;
+      padding: 8px 16px;
+      margin: 0;
+      border-radius: 5px;
+      opacity: 0.8;
+      transition: opacity 300ms ease-out;
+    }
+    #product-list > li > i {
+      opacity: 0;
+      margin-left: 16px;
+      transition: opacity 300ms ease-out;
+    }
+    #product-list > li > i.hide {
+      opacity: 0;
+    }
+    #product-list > li > i.show {
+      opacity: 1;
+    }
+    #product-list > li > .btn-add-to-cart:hover {
+      opacity: 1;
+    }
+    #product-list > li:last-child{
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MegaMart</h1>
+    <div>
+      <span id="cart-total-price">$</span>
+      <span id="cart-total-tax">($)</span>
+    </div>
+  </header>
+  <section>
+    <ul id="product-list"></ul>
+  </section>
+  <script>
+    /* 새로운 요구사항 1
+      - 구매 합계가 20달러 이상이면 무료 배송을 하려고 함.
+      - 장바구니에 넣으면 합계가 20달러가 넘는 제품의 구매 버튼 옆에 무료 배송 아이콘을 표시한다.
+    */
+    /* 새로운 요구사항 2
+      - 장바구니의 금액 합계가 바뀔 때마다 세금을 다시 계산한다.
+    */
+    /* 개선 1 - 액션에서 계산 빼내기 */
+  </script>
+  <script>
+    // core
+    const $ = {};
+    $.el = html => {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = html;
+      return wrap.children[0];
+    };
+    $.append = (child, parent = document) => parent.appendChild(child);
+    $.remove = (el) => el.removeChild(el);
+    $.qs = (sel, parent = document) => parent.querySelector(sel);
+    $.qsa = (sel, parent = document) => parent.querySelectorAll(sel);
+    $.on = (el, event, f) => el.addEventListener(event, f);
+    $.addClass = (el, name) => el.classList.add(name);
+    $.removeClass = (el, name) => el.classList.remove(name);
+  </script>
+
+  <script>
+    // example application business logic + data
+    var products = [
+      { id: 1, name: 'shoes', price: 6 },
+      { id: 2, name: 't-shirt', price: 2 },
+    ];
+    // [A]: 전역변수 - 변경가능한 전역변수
+    var shopping_cart = [];
+    // [A]: 전역변수 - 변경가능한 전역변수
+    var shopping_cart_total = 0;
+
+    // [A]: 전역변수를 변경하는 함수
+    function add_item_to_cart(name, price) {
+      shopping_cart = add_item(shopping_cart, name, price);
+      calc_cart_total();
+    }
+
+    // [C]: 장바구니에 상품을 추가하는 함수
+    function add_item(cart, name, price) {
+      const newCart = cart.slice();
+      newCart.push({
+        name: name,
+        price: price
+      });
+      return newCart;
+    }
+
+    // [A] 전역변수를 참조하고 있고, 액션을 호출함
+    function calc_cart_total() {
+      shopping_cart_total = calc_total(shopping_cart);
+      set_cart_total_dom();
+      update_shipping_icons();
+      update_tax_dom();
+    }
+
+    // [C]
+    function calc_total(cart) {
+      let total = 0;
+      for (let i = 0; i < cart.length; i++) {
+        const item = cart[i];
+        total += item.price;
+      }
+      return total;
+    }
+
+    // [A]: DOM 에서 정보를 읽어오는 액션
+    function update_shipping_icons() {
+      let buy_buttons = get_buy_buttons_dom();
+      for (let i = 0; i < buy_buttons.length; i++) {
+        const button = buy_buttons[i];
+        const item = button.item;
+        if (gets_free_shipping(shopping_cart_total, item.price))
+          button.show_free_shipping_icon();
+        else
+          button.hide_free_shipping_icon();
+      }
+    }
+
+    // [C]
+    function gets_free_shipping(total, item_price) {
+      return item_price + total >= 20;
+    }
+
+    // [A] DOM 을 바꾸는 액션
+    function set_cart_total_dom() {
+      $.qs('#cart-total-price').textContent = `$${shopping_cart_total}`;
+    }
+
+    // [A]: DOM 에서 정보를 읽어오는 액션
+    function get_buy_buttons_dom() {
+      const buttons = [];
+      for (const buttonEl of $.qsa('#product-list > li')) {
+        const iconEl = $.qs('i', buttonEl);
+        buttons.push({
+          el: buttonEl,
+          item: {
+            id: buttonEl.getAttribute('data-product-id'),
+            name: buttonEl.getAttribute('data-product-name'),
+            price: parseInt(buttonEl.getAttribute('data-product-price'), 10),
+          },
+          show_free_shipping_icon: () => {
+            $.removeClass(iconEl, 'hide');
+            $.addClass(iconEl, 'show')
+          },
+          hide_free_shipping_icon: () => {
+            $.removeClass(iconEl, 'show');
+            $.addClass(iconEl, 'hide');
+          },
+        });
+      }
+      return buttons;
+    }
+
+    // [A]: 전역변수를 사용하고 있고, 액션을 호출
+    function update_tax_dom() {
+      set_tax_dom(calc_tax(shopping_cart_total));
+    }
+
+    // [C]
+    function calc_tax(amount) {
+      return amount * 0.10;
+    }
+
+    // [A]: DOM 에 정보를 반영
+    function set_tax_dom(tax) {
+      const fixedTax = Number(tax).toFixed(2);
+      $.qs('#cart-total-tax').textContent = `($${fixedTax})`;
+    }
+
+  </script>
+  <script>
+    // initialize
+    const listWrap = $.qs('#product-list');
+    products
+      .map(({ id, name, price }) => {
+        return $.el(`
+          <li data-product-id="${id}" data-product-name="${name}" data-product-price="${price}">
+            <span class="product-name">${name}</span>
+            <span class="product-price">$${price}</span>
+            <button type="button" class="btn-add-to-cart">구매하기</button>
+            <i>free</i>
+          </li>
+        `);
+      })
+      .forEach((el) => {
+        $.on(el, 'click', function (event) {
+          const productId = parseInt(event.currentTarget.getAttribute('data-product-id'), 10);
+          const [product] = products.filter((p) => p.id === productId);
+          if (!product) {
+            return;
+          }
+          add_item_to_cart(product.name, product.price);
+        });
+        $.append(el, listWrap);
+      });
+
+    set_cart_total_dom();
+    set_tax_dom(0);
+  </script>
+</body>
+</html>
