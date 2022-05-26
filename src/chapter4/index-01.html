@@ -107,9 +107,12 @@
       { id: 1, name: 'shoes', price: 6 },
       { id: 2, name: 't-shirt', price: 2 },
     ];
+    // [A]: 전역변수 - 변경가능한 전역변수
     var shopping_cart = [];
+    // [A]: 전역변수 - 변경가능한 전역변수
     var shopping_cart_total = 0;
 
+    // [A]: 전역변수를 변경하는 함수
     function add_item_to_cart(name, price) {
       shopping_cart.push({
         name: name,
@@ -118,6 +121,7 @@
       calc_cart_total();
     }
 
+    // [A] 전역변수를 참조하고 있고, 액션을 호출함
     function calc_cart_total() {
       shopping_cart_total = 0;
       for(var i = 0; i < shopping_cart.length; i++) {
@@ -128,6 +132,7 @@
       update_shipping_icons();
     }
 
+    // [A]: DOM 에서 정보를 읽어오는 액션
     function update_shipping_icons() {
       var buy_buttons = get_buy_buttons_dom();
       for(var i = 0; i < buy_buttons.length; i++) {
@@ -140,10 +145,12 @@
       }
     }
 
+    // [A] DOM 을 바꾸는 액션
     function set_cart_total_dom() {
       $.qs('#cart-total-price').textContent = `$${shopping_cart_total}`;
     }
 
+    // [A] DOM 에서 정보를 읽어오는 액션
     function get_buy_buttons_dom() {
       const buttons = [];
       for (const buttonEl of $.qsa('#product-list > li')) {
