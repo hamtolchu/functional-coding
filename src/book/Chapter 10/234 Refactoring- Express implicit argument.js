@@ -8,7 +8,7 @@ function setPriceByName(cart, name, price) {
 }
 
 cart = setPriceByName(cart, "shoe", 13);
-cart = setQuantityByName(cart, "shoe", 3);
+cart = setQuantityByName01(cart, "shoe", 3);
 cart = setShippingByName(cart, "shoe", 0);
 cart = setTaxByName(cart, "shoe", 2.34);
 
